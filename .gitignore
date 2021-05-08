@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.idea/
+checkpoint
+data/
+model/
+model_32_16/
+model_32_8/
+plot/
+plot_32_16/
+plot_32_8/
