@@ -1,20 +1,13 @@
-import numpy as np # linear algebra
-import pandas as pd # data_small processing, CSV file I/O (e.g. pd.read_csv)
-
-# Input data_small files are available in the "../input/" directory.
-# For example, running this (by clicking run or pressing Shift+Enter) will list the files in the input directory
+import numpy as np
+import pandas as pd
 
 import os
-
-import random
 import warnings
 
 import tensorflow
 from sklearn.metrics import confusion_matrix
 warnings.filterwarnings('ignore')
 
-#File Operation libraries
-import glob
 from pathlib import Path
 
 #Visualisation Libraries
@@ -37,9 +30,6 @@ if gpus:
     tensorflow.config.experimental.set_memory_growth(gpus[0], True)
   except RuntimeError as e:
     print(e)
-
-from keras.preprocessing.image import ImageDataGenerator
-from keras.applications.vgg19 import VGG19
 
 #Image Transformation Libraries
 import cv2
