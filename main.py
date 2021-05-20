@@ -38,14 +38,14 @@ from imgaug import augmenters as iaa
 # Let's start with the hyperparameters
 base_learning_rate = 1e-5
 batch_size=32
-epochs = 8
+epochs = 1
 
 plot_dir='plot_' + str(batch_size) + '_' + str(epochs)
 model_dir='model_' + str(batch_size) + '_' + str(epochs)
 if not os.path.exists(plot_dir):
-    os.mkdir(model_dir)
-if not os.path.exists(model_dir):
     os.mkdir(plot_dir)
+if not os.path.exists(model_dir):
+    os.mkdir(model_dir)
 
 print("plot_dir: ", plot_dir)
 print("model_dir: ", model_dir)
@@ -186,18 +186,18 @@ def create_model():
     img_input = Input(shape=(224, 224, 3))
 
     # Block 1
-    x = Conv2D(filters=64, kernel_size=(3, 3), padding='same', activation='relu', name='block1_conv1', trainable=False)(
+    x = Conv2D(filters=64, kernel_size=(3, 3), padding='same', activation='relu', name='block1_conv1')(
         img_input)
-    x = Conv2D(filters=64, kernel_size=(3, 3), padding='same', activation='relu', name='block1_conv2', trainable=False)(
+    x = Conv2D(filters=64, kernel_size=(3, 3), padding='same', activation='relu', name='block1_conv2')(
         x)
-    x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid', name='block1_pool', trainable=False)(x)
+    x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid', name='block1_pool')(x)
 
     # Block 2
     x = Conv2D(filters=128, kernel_size=(3, 3), padding='same', activation='relu', name='block2_conv1',
                trainable=False)(x)
     x = Conv2D(filters=128, kernel_size=(3, 3), padding='same', activation='relu', name='block2_conv2',
                trainable=False)(x)
-    x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid', name='block2_pool', trainable=False)(x)
+    x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid', name='block2_pool')(x)
 
     # Block 3
     x = Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu', name='block3_conv1',
@@ -208,7 +208,7 @@ def create_model():
                trainable=False)(x)
     x = Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu', name='block3_conv4',
                trainable=False)(x)
-    x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid', name='block3_pool', trainable=False)(x)
+    x = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid', name='block3_pool')(x)
 
     # Block 4
     x = Conv2D(filters=512, kernel_size=(3, 3), padding='same', activation='relu', name='block4_conv1')(x)
@@ -255,12 +255,31 @@ reduce_lr = ReduceLROnPlateau(monitor='val_accuracy',
                                 factor=0.2,
                                 min_lr=1e-7)
 
-model_chkpoint = ModelCheckpoint(filepath=model_dir + '/vgg_19_model', save_best_only=True, save_weights_only=True)
+model_chkpoint = ModelCheckpoint(filepath=model_dir + '/vgg_19_model.hdf5', save_best_only=True, save_weights_only=True)
 data_generator = generate_batch_images(df_train, batch_size)
 
-model.fit_generator(data_generator, epochs=epochs, steps_per_epoch=df_train.shape[0]/batch_size,
+history = model.fit_generator(data_generator, epochs=epochs, steps_per_epoch=df_train.shape[0]/batch_size,
                     callbacks=[reduce_lr, model_chkpoint], validation_data=(val_images, val_labels),
                     class_weight={0:3, 1:1})
+
+# list all data in history
+print(history.history.keys())
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.savefig(plot_dir + '/' + 'train_proc.png')
 
 # serialize model to JSON
 model_json = model.to_json()
